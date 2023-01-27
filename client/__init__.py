@@ -87,8 +87,6 @@ class OpenContractsClient:
             }
         )
 
-        print(result)
-
         if result['createCorpus']['ok']:
             return result['createCorpus']['objId']
         else:
