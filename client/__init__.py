@@ -18,8 +18,10 @@ from typing import Optional
 from gql import Client
 from gql.transport.aiohttp import AIOHTTPTransport
 
-from client.utils import package_file_into_base64
-from .mutations import CREATE_LABELSET, CREATE_CORPUS
+from client.utils import package_file_into_base64, random_hex_color, base_64_encode_bytes
+from .mutations import CREATE_LABELSET, CREATE_CORPUS, CREATE_ANNOTATION_LABEL_FOR_LABEL_SET, ANNOTATE_DOCUMENT, \
+    UPLOAD_DOCUMENT
+from .types.enums import LabelType, SemanticIcon
 
 
 class OpenContractsClient:
@@ -38,7 +40,7 @@ class OpenContractsClient:
         description: str,
         icon_path: pathlib.Path,
         filename: str
-    ) -> str:
+    ) -> Optional[str]:
         """
         Create a labelset.
 
@@ -89,5 +91,98 @@ class OpenContractsClient:
 
         if result['createCorpus']['ok']:
             return result['createCorpus']['objId']
+        else:
+            return None
+
+    def create_annotation_label(
+        self,
+        description: str,
+        icon: SemanticIcon,
+        text: str,
+        label_type: LabelType,
+        labelset_id: str,
+        color: str = None
+    ) -> Optional[str]:
+
+        if color is None:
+            color = random_hex_color()
+
+        result = self.client.execute(
+            CREATE_ANNOTATION_LABEL_FOR_LABEL_SET,
+            variable_values={
+                "color": color,
+                "description": description,
+                "icon": icon.value,
+                "text": text,
+                "labelType": label_type,
+                "labelsetId": labelset_id,
+            }
+        )
+        print(f"Result: {result}")
+
+        if result['createAnnotationLabelForLabelset']['ok']:
+            return result['createAnnotationLabelForLabelset']['objId']
+        else:
+            return None
+
+    def upload_document(
+        self,
+        path: pathlib.Path,
+        title: str,
+        description: str,
+        metadata: dict = {}
+    ) -> Optional[str]:
+
+        with open(path, 'rb') as doc_file:
+            doc_base_64_string = base_64_encode_bytes(doc_file.read())
+
+        filename = path.name
+
+        result = self.client.execute(
+            UPLOAD_DOCUMENT,
+            variable_values={
+                "base64FileString": doc_base_64_string,
+                "filename": filename,
+                "customMeta": metadata,
+                "description": description,
+                "title": title
+            }
+        )
+
+        print(f"Result: {result}")
+
+        if result['uploadDocument']['ok']:
+            return result['uploadDocument']['document']['id']
+        else:
+            return None
+
+    # TODO - write and implement function to link doc to corpus
+
+
+    def apply_label_to_document(
+        self,
+        corpus_id: str,
+        document_id: str,
+        annotation_label_id: str,
+        raw_text: str = "",
+        json: dict = {},
+        page: int= 1
+    ) -> Optional[str]:
+
+        result = self.client.execute(
+            ANNOTATE_DOCUMENT,
+            variable_values={
+                "json": json,
+                "page": page,
+                "rawText": raw_text,
+                "corpusId": corpus_id,
+                "documentId": document_id,
+                "annotationLabelId": annotation_label_id,
+            }
+        )
+        print(f"Result: {result}")
+
+        if result['addAnnotation']['ok']:
+            return result['addAnnotation']['annotation']['id']
         else:
             return None

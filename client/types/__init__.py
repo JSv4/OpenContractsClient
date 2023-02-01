@@ -12,25 +12,3 @@
 
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
-import base64
-import random
-
-from pathlib import Path
-
-
-def package_file_into_base64(file_path: Path) -> str:
-    return base64.b64encode(file_path.open("rb").read()).decode("utf-8")
-
-
-def random_hex_color() -> str:
-    r = lambda: random.randint(0, 255)
-    return '#%02X%02X%02X' % (r(), r(), r())
-
-
-def base_64_encode_bytes(doc_bytes: bytes):
-    """
-    Given bytes, encode base64 and utf-8
-    """
-    base64_encoded_data = base64.b64encode(doc_bytes)
-    base64_encoded_message = base64_encoded_data.decode("utf-8")
-    return base64_encoded_message

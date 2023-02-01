@@ -78,6 +78,7 @@ mutation (
     ) {
       ok
       message
+      objId
     }
   }
 """)
@@ -97,6 +98,7 @@ UPLOAD_DOCUMENT = gql("""
       description: $description
       title: $title
     ) {
+      ok
       document {
         id
         icon
