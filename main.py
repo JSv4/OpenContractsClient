@@ -1,6 +1,7 @@
 import pathlib
 
-from client import OpenContractsClient, SemanticIcon, LabelType
+from open_contracts_api_client import SemanticIcon, LabelType
+from open_contracts_api_client.client import OpenContractsClient
 
 API_KEY = "dcfbca8a89e88e38822988e15b2230b83cc0c500"
 url = f"http://localhost:8000/graphql/"
@@ -11,7 +12,7 @@ client = OpenContractsClient(
 )
 
 labelset_id = client.create_labelset(
-    icon_path=pathlib.Path("/home/jman/PycharmProjects/OpenContractsApiClientTest/icon.png"),
+    icon_path=pathlib.Path("/home/jman/PycharmProjects/open-contracts-api-client/icon.png"),
     title="USC Labels",
     description="Code for United States Code Labels",
     filename="icon.png"
@@ -42,7 +43,7 @@ text_data_data_label = client.create_annotation_label(
 )
 
 print(client.create_corpus(
-    icon_path=pathlib.Path("/home/jman/PycharmProjects/OpenContractsApiClientTest/icon.png"),
+    icon_path=pathlib.Path("/home/jman/PycharmProjects/open-contracts-api-client/icon.png"),
     title="USC Labels",
     description="Code for United States Code Labels",
     labelset_id=labelset_id,
