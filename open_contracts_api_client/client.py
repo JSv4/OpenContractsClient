@@ -11,7 +11,7 @@ from gql import Client
 from gql.transport.aiohttp import AIOHTTPTransport
 
 from open_contracts_api_client.utils import base_64_encode_bytes, package_file_into_base64, random_hex_color
-from open_contracts_api_client.types.enums import SemanticIcon, LabelType
+from open_contracts_api_client.client_types.client_enums import SemanticIcon, LabelType
 from open_contracts_api_client.graphql.mutations import (
     CREATE_LABELSET,
     CREATE_CORPUS,
@@ -61,7 +61,7 @@ class OpenContractsClient:
         :return: Id of created labelset or None if creation failed.
         """
 
-        if self.label_set_id is None:
+        if self.label_set_id is not None:
             print("Labelset already created. Exiting")
             return
 
@@ -92,7 +92,7 @@ class OpenContractsClient:
         title: str
     ) -> Optional[str]:
 
-        if self.corpus_id is None:
+        if self.corpus_id is not None:
             print("Corpus already created. Exiting")
             return
 
@@ -148,6 +148,28 @@ class OpenContractsClient:
             return result['createAnnotationLabelForLabelset']['objId']
         else:
             return None
+
+    def get_or_create_annotation_label(
+            self,
+            description: str,
+            icon: SemanticIcon,
+            text: str,
+            label_type: LabelType,
+            labelset_id: str,
+            color: str = None
+    ) -> Optional[str]:
+
+        if text in self.label_store:
+            return self.label_store[text]
+
+        return self.create_annotation_label(
+            description=description,
+            icon=icon,
+            text=text,
+            label_type=label_type,
+            labelset_id=labelset_id,
+            color=color
+        )
 
     def upload_document(
         self,
@@ -232,7 +254,7 @@ class OpenContractsClient:
         doc_title: str,
         metadata_to_annotate: dict[str, str],
         doc_labels_to_annotate: list[str]
-    ) -> bool:
+    ):
 
         if self.label_set_id is None or self.corpus_id is None:
             raise ValueError("LabelSet and Corpus must be created first.")
@@ -244,12 +266,17 @@ class OpenContractsClient:
             description="Uploaded via API"
         )
 
+        self.link_document_to_corpus(
+            document_ids=[doc_id],
+            corpus_id=self.corpus_id
+        )
+
         # For each metadata field, first check annotation label exists and, if not, create
         for annotation_label_name, annotation_value in metadata_to_annotate.items():
             if annotation_label_name in self.label_store:
                 annotation_label_id = self.label_store[annotation_label_name]
             else:
-                annotation_label_id = self.create_annotation_label(
+                annotation_label_id = self.get_or_create_annotation_label(
                     description="Metadata label",
                     icon=SemanticIcon.TAGS,
                     text=annotation_label_name,
@@ -259,7 +286,7 @@ class OpenContractsClient:
                 self.label_store[annotation_label_name] = annotation_label_id
 
             self.apply_label_to_document(
-                self.corpus_id,
+                corpus_id=self.corpus_id,
                 document_id=doc_id,
                 annotation_label_id=annotation_label_id,
                 raw_text=annotation_value
@@ -270,16 +297,16 @@ class OpenContractsClient:
                 doc_label_id = self.label_store[doc_label]
             else:
                 doc_label_id = self.create_annotation_label(
-                    description="Metadata label",
+                    description="Doc label",
                     icon=SemanticIcon.TAGS,
-                    text="",
+                    text=doc_label,
                     label_type=LabelType.DOC_TYPE_LABEL,
                     labelset_id=self.label_set_id
                 )
                 self.label_store[doc_label] = doc_label_id
 
             self.apply_label_to_document(
-                self.corpus_id,
+                corpus_id=self.corpus_id,
                 document_id=doc_id,
                 annotation_label_id=doc_label_id,
                 raw_text=""

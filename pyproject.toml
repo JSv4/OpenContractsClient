@@ -27,9 +27,9 @@ dependencies = []
 dynamic = ["version"]
 
 [project.urls]
-Documentation = "https://github.com/unknown/open-contracts-api-client#readme"
-Issues = "https://github.com/unknown/open-contracts-api-client/issues"
-Source = "https://github.com/unknown/open-contracts-api-client"
+Documentation = "https://github.com/JSv4/OpenContractsClientreadme"
+Issues = "https://github.com/JSv4/OpenContractsClient/issues"
+Source = "hhttps://github.com/JSv4/OpenContractsClient"
 
 [tool.hatch.version]
 path = "open_contracts_api_client/__about__.py"
