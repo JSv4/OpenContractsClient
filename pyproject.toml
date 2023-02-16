@@ -23,7 +23,10 @@ classifiers = [
   "Programming Language :: Python :: Implementation :: CPython",
   "Programming Language :: Python :: Implementation :: PyPy",
 ]
-dependencies = []
+dependencies = [
+  "gql",
+  "aiohttp"
+]
 dynamic = ["version"]
 
 [project.urls]

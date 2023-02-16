@@ -55,7 +55,7 @@ test_pdf_path = pathlib.Path("test.pdf")
 
 doc_id = client.upload_document(
     test_pdf_path,
-    title="Test Doc",
+    title="Fixed Test Doc",
     description="Test document uploaded for API client test."
 )
 

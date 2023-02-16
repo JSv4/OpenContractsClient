@@ -9,6 +9,7 @@ from typing import Optional
 
 from gql import Client
 from gql.transport.aiohttp import AIOHTTPTransport
+from gql.transport.requests import RequestsHTTPTransport
 
 from open_contracts_api_client.utils import base_64_encode_bytes, package_file_into_base64, random_hex_color
 from open_contracts_api_client.client_types.client_enums import SemanticIcon, LabelType
@@ -38,8 +39,15 @@ class OpenContractsClient:
 
     def __init__(self, graphql_url: str, api_key: str):
         # Select your transport with a defined url endpoint
-        transport = AIOHTTPTransport(
+
+        # transport = AIOHTTPTransport(
+        #     url=graphql_url,
+        #     headers={'AUTHORIZATION': f'Key {api_key}'}
+        # )
+        transport = RequestsHTTPTransport(
             url=graphql_url,
+            verify=True,
+            retries=3,
             headers={'AUTHORIZATION': f'Key {api_key}'}
         )
         self.client = Client(transport=transport, fetch_schema_from_transport=True)
@@ -252,6 +260,7 @@ class OpenContractsClient:
         self,
         doc_path: pathlib.Path,
         doc_title: str,
+        doc_description: str,
         metadata_to_annotate: dict[str, str],
         doc_labels_to_annotate: list[str]
     ):
@@ -263,7 +272,7 @@ class OpenContractsClient:
         doc_id = self.upload_document(
             path=doc_path,
             title=doc_title,
-            description="Uploaded via API"
+            description=doc_description
         )
 
         self.link_document_to_corpus(
