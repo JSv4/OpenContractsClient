@@ -25,7 +25,8 @@ classifiers = [
 ]
 dependencies = [
   "gql",
-  "aiohttp"
+  "aiohttp",
+  "requests_toolbelt"
 ]
 dynamic = ["version"]
 
